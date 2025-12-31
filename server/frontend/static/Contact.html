@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
+		<title>Contact Us</title>
+		<style>
+			:root{--primary:#0d6efd;--muted:#6c757d}
+			body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:0;padding:0;background:#f8f9fa;color:#212529}
+			.container{max-width:960px;margin:48px auto;padding:24px;background:#fff;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.06)}
+			h1{margin:0 0 8px;font-size:1.75rem}
+			p.lead{margin:0 0 24px;color:var(--muted)}
+			.grid{display:grid;grid-template-columns:1fr 320px;gap:24px}
+			@media (max-width:780px){.grid{grid-template-columns:1fr}}
+			form{display:flex;flex-direction:column;gap:12px}
+			label{font-size:.875rem;color:#495057}
+			input[type="text"],input[type="email"],textarea,select{width:100%;padding:10px 12px;border:1px solid #ced4da;border-radius:6px;font-size:1rem}
+			textarea{min-height:140px;resize:vertical}
+			.row{display:flex;gap:12px}
+			.row .col{flex:1}
+			.actions{display:flex;gap:12px;align-items:center}
+			button{background:var(--primary);color:#fff;padding:10px 14px;border:none;border-radius:6px;cursor:pointer}
+			button[disabled]{opacity:.6;cursor:not-allowed}
+			.info{background:#f1f5ff;border-left:4px solid var(--primary);padding:12px;border-radius:6px}
+			.muted{color:var(--muted);font-size:.9rem}
+			.notice{padding:10px 12px;border-radius:6px;margin-top:8px}
+			.notice.success{background:#e6ffed;color:#064e2a;border:1px solid #b7f5c6}
+			.notice.error{background:#fff1f0;color:#5f2120;border:1px solid #ffd4d6}
+			.required{color:#d00;margin-left:6px}
+		</style>
+	</head>
+	<body>
+		<main class="container" role="main">
+			<header>
+				<h1>Contact Us</h1>
+				<p class="lead">Have a question, feedback, or need support? Send us a message and we'll get back to you within 1–2 business days.</p>
+			</header>
+
+			<section class="grid">
+				<div>
+					<form id="contactForm" novalidate>
+						<div class="row">
+							<div class="col">
+								<label for="name">Full name <span class="required">*</span></label>
+								<input id="name" name="name" type="text" placeholder="Jane Doe" required />
+							</div>
+							<div class="col">
+								<label for="email">Email <span class="required">*</span></label>
+								<input id="email" name="email" type="email" placeholder="you@example.com" required />
+							</div>
+						</div>
+
+						<div>
+							<label for="subject">Subject</label>
+							<input id="subject" name="subject" type="text" placeholder="Brief subject" />
+						</div>
+
+						<div>
+							<label for="message">Message <span class="required">*</span></label>
+							<textarea id="message" name="message" placeholder="Write your message..." required></textarea>
+						</div>
+
+						<div class="actions">
+							<button id="submitBtn" type="submit">Send message</button>
+							<div id="formStatus" aria-live="polite" style="margin-left:8px"></div>
+						</div>
+
+						<div id="response" class="notice" style="display:none;margin-top:12px"></div>
+					</form>
+				</div>
+
+				<aside>
+					<div class="info">
+						<strong>Support</strong>
+						<p class="muted" style="margin-top:8px">For account or technical issues, email <a href="mailto:support@example.com">support@example.com</a> or call <a href="tel:+1234567890">+1 (234) 567-890</a>.</p>
+					</div>
+
+					<div style="margin-top:16px">
+						<h3 style="margin:0 0 8px 0">Address</h3>
+						<p class="muted">123 Example St.<br/>City, State ZIP</p>
+					</div>
+				</aside>
+			</section>
+
+		</main>
+
+		<script>
+			(function(){
+				const form = document.getElementById('contactForm');
+				const submitBtn = document.getElementById('submitBtn');
+				const responseBox = document.getElementById('response');
+				const status = document.getElementById('formStatus');
+
+				function setResponse(text,type){
+					responseBox.style.display = 'block';
+					responseBox.textContent = text;
+					responseBox.className = 'notice ' + (type === 'success' ? 'success' : 'error');
+				}
+
+				form.addEventListener('submit', async function(e){
+					e.preventDefault();
+					responseBox.style.display = 'none';
+					status.textContent = '';
+
+					if(!form.checkValidity()){
+						// Show native validation hints
+						form.reportValidity();
+						return;
+					}
+
+					const data = {
+						name: form.name.value.trim(),
+						email: form.email.value.trim(),
+						subject: form.subject.value.trim(),
+						message: form.message.value.trim()
+					};
+
+					submitBtn.disabled = true;
+					submitBtn.textContent = 'Sending...';
+
+					try{
+						// Replace the URL below with your backend endpoint.
+						const res = await fetch('/api/contact', {
+							method: 'POST',
+							headers: {'Content-Type':'application/json'},
+							body: JSON.stringify(data)
+						});
+
+						if(res.ok){
+							setResponse('Thanks — your message was sent.', 'success');
+							form.reset();
+						} else {
+							const body = await res.text();
+							setResponse('Unable to send message. ' + (body || ''), 'error');
+						}
+					} catch(err){
+						setResponse('Network error. Please try again later.', 'error');
+					} finally{
+						submitBtn.disabled = false;
+						submitBtn.textContent = 'Send message';
+					}
+				});
+			})();
+		</script>
+	</body>
+</html>
+
